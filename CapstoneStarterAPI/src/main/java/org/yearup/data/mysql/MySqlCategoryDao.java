@@ -1,6 +1,5 @@
 package org.yearup.data.mysql;
 
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 import org.yearup.data.CategoryDao;
 import org.yearup.models.Category;
@@ -46,10 +45,11 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         try(Connection connection = getConnection()) {
             try(PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setInt(1, categoryId);
-                ResultSet results = statement.executeQuery();
 
-                while (results.next()) {
-                    return mapRow(results);
+                try (ResultSet results = statement.executeQuery()) {
+                    if (results.next()) {
+                        return mapRow(results);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -62,15 +62,18 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     public Category create(Category category) {
         String query = "INSERT INTO categories (category_id, name, description) VALUES (?, ?, ?);";
         try(Connection connection = getConnection()) {
-            try(PreparedStatement statement = connection.prepareStatement(query)) {
+            try(PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 statement.setInt(1, category.getCategoryId());
                 statement.setString(2, category.getName());
-                statement.setString(3, category.getName());
+                statement.setString(3, category.getDescription());
 
-                ResultSet results = statement.executeQuery();
+                statement.executeUpdate();
 
-                while (results.next()) {
-                    return mapRow(results);
+                try (ResultSet keys = statement.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        int categoryId = keys.getInt(1);
+                        return getById(categoryId);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -82,12 +85,39 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     @Override
     public void update(int categoryId, Category category) {
         // update category
+        String query = "UPDATE products SET name = ?, description = ? WHERE category_id = ?";
+
+        try (Connection connection = getConnection())
+        {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
+            statement.setInt(3, category.getCategoryId());
+
+            statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public void delete(int categoryId)
-    {
+    public void delete(int categoryId) {
         // delete category
+        String query = "DELETE FROM categories WHERE category_id = ?;";
+
+        try (Connection connection = getConnection())
+        {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, categoryId);
+
+            statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private Category mapRow(ResultSet row) throws SQLException
@@ -96,12 +126,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         String name = row.getString("name");
         String description = row.getString("description");
 
-        Category category = new Category()
-        {{
+        Category category = new Category() {
+            {
             setCategoryId(categoryId);
             setName(name);
             setDescription(description);
-        }};
+        }
+        };
 
         return category;
     }
