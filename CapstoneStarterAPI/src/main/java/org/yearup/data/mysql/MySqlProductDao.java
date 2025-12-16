@@ -25,12 +25,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
 
         String sql = "SELECT * FROM products " +
                 "WHERE (category_id = ? OR ? = -1) " +
-                "   AND (price <= ? OR ? = -1) " +
-                "   AND (subcategory = ? OR ? = '')";
+                "   AND (price >= ? OR ? = -1) " +
+                "   AND (subcategory = ? OR ? = '') " +
+                "   ABD (price <= ? or ? = -1";
 
         categoryId = categoryId == null ? -1 : categoryId;
         minPrice = minPrice == null ? new BigDecimal("-1") : minPrice;
-        maxPrice = maxPrice == null ? new BigDecimal("-1") : maxPrice;
+        maxPrice = maxPrice == null ? new BigDecimal("1") : maxPrice;
         subCategory = subCategory == null ? "" : subCategory;
 
         try (Connection connection = getConnection())
@@ -42,6 +43,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             statement.setBigDecimal(4, minPrice);
             statement.setString(5, subCategory);
             statement.setString(6, subCategory);
+            statement.setBigDecimal(7, maxPrice);
+            statement.setBigDecimal(8, maxPrice);
 
             ResultSet row = statement.executeQuery();
 
@@ -119,8 +122,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         String sql = "INSERT INTO products(name, price, category_id, description, subcategory, image_url, stock, featured) " +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
-        try (Connection connection = getConnection())
-        {
+        try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             statement.setString(1, product.getName());
             statement.setBigDecimal(2, product.getPrice());
@@ -192,8 +194,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     public void delete(int productId)
     {
 
-        String sql = "DELETE FROM products " +
-                " WHERE product_id = ?;";
+        String sql = "DELETE FROM products \" +\n" +
+                "                \" WHERE product_id = ?;";
 
         try (Connection connection = getConnection())
         {

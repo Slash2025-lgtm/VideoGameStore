@@ -1,6 +1,7 @@
 package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.yearup.data.CategoryDao;
@@ -39,6 +40,7 @@ public class CategoriesController
     }
 
     // add the appropriate annotation for a get action
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @GetMapping("/{id}")
     public Category getById(@PathVariable int id) {
         // get the category by id
@@ -54,6 +56,7 @@ public class CategoriesController
 
     // add annotation to call this method for a POST action
     // add annotation to ensure that only an ADMIN can call this function
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Category addCategory(@RequestBody Category category) {
@@ -73,6 +76,7 @@ public class CategoriesController
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
     // add annotation to ensure that only an ADMIN can call this function
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteCategory(@PathVariable int id) {
