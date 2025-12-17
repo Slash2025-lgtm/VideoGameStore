@@ -127,10 +127,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
         Category category = new Category() {
             {
-            setCategoryId(categoryId);
-            setName(name);
-            setDescription(description);
-        }
+                setCategoryId(categoryId);
+                setName(name);
+                setDescription(description);
+            }
         };
 
         return category;
