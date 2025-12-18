@@ -1,4 +1,4 @@
-#### VideoGameStore
+## VideoGameStore
 
 # Phase 1
 ## Step 1: Category Controller Methods
